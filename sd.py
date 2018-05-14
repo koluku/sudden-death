@@ -1,12 +1,12 @@
-import sys
+import click
 import pyperclip
 
-def generator(reactant):
-    length = len(reactant)
+def generator(msg):
+    length = len(msg)
     generating = '＿人'
     for i in range(length):
         generating += '人'
-    generating += '人＿\n＞　' + reactant + '　＜\n￣Y'
+    generating += '人＿\n＞　' + msg + '　＜\n￣Y'
     for i in range(length):
         generating += '^'
         if(i != length - 1):
@@ -14,21 +14,15 @@ def generator(reactant):
     generating += 'Y￣'
     return generating
 
+@click.command()
+@click.argument('msg')
+def cmd(msg):
+    sd = generator(msg)
+    pyperclip.copy(sd)
+    click.echo(sd)
+
 def main():
-    args = sys.argv
-    number = len(args)
-    count = 0
-    for i in range(number):
-        if args[i] in ['paste', '-p']:
-            text = generator(pyperclip.paste())
-        elif i < number-1 and args[i] in ['write', '-w']:
-            text = generator(args[i+1])
-        else:
-            count += 1
-    if count == number:
-        text = generator(input())
-    pyperclip.copy(text)
-    print(text)
+    cmd()
 
 if __name__ == '__main__':
     main()
