@@ -1,17 +1,22 @@
 import click
 import pyperclip
+import unicodedata
+
+def text_len(text):
+    count = 0
+    for c in text:
+        count += 2 if unicodedata.east_asian_width(c) in 'FWA' else 1
+    return count
 
 def generator(msg):
-    length = len(msg)
+    length = text_len(msg)
     generating = '＿人'
-    for i in range(length):
+    for i in range(length//2):
         generating += '人'
-    generating += '人＿\n＞　' + msg + '　＜\n￣Y'
-    for i in range(length):
-        generating += '^'
-        if(i != length - 1):
-            generating += 'Y'
-    generating += 'Y￣'
+    generating += '人＿\n＞  ' + msg + '  ＜\n￣^Y'
+    for i in range(length//2):
+        generating += '^Y'
+    generating += '^Y￣'
     return generating
 
 @click.command()
