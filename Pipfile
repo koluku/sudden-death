@@ -4,6 +4,9 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+pylint = "==2.5.3"
+autopep8 = "==1.5.3"
+mypy = "==0.782"
 
 [packages]
 pyperclip = ">=1.5.27"
