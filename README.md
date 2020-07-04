@@ -9,14 +9,14 @@
 ## Requirements
 
 - Python 3.5 over
-- ```pip install -r requirements.txt```
+- ```pipenv install```
 
 ## Usage
 
 sd.pyを実行することで次に入力した文字が吹き出しになって出力されます。また、同時に出力された吹き出しはクリップボードにもコピーされます。
 
 ```
-python sd.py メッセージ
+pipenv run python sd.py メッセージ
 ```
 
 ## License
