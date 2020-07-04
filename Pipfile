@@ -4,10 +4,10 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-pylint = "*"
-autopep8 = "*"
+pylint = "==2.5.3"
+autopep8 = "==1.5.3"
 
 [packages]
-mypy = "*"
+mypy = "==0.782"
 pyperclip = ">=1.5.27"
 click = "==7.1.2"
