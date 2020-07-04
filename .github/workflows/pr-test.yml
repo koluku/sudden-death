@@ -197,7 +197,7 @@ jobs:
           pipenv install --dev
       - name: Check type hints
         run: |
-          pipenv run mypy .
+          pipenv run mypy sd.py
 
   # lintを行い、結果をPRにコメントとして表示する。
   # ここではチェックは落ちない
