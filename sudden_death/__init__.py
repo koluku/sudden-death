@@ -60,7 +60,7 @@ def cmd(msg: str = ""):
     click.echo(result)
 
 
-def main():
+def main() -> None:
     """
     メイン関数
     """
