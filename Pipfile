@@ -8,5 +8,6 @@ pylint = "*"
 autopep8 = "*"
 
 [packages]
+mypy = "*"
 pyperclip = ">=1.5.27"
 click = "==7.1.2"
