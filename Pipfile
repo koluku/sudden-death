@@ -8,6 +8,3 @@ verify_ssl = true
 [packages]
 pyperclip = ">=1.5.27"
 click = "==7.1.2"
-
-[requires]
-python_version = "3.8"
