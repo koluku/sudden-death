@@ -1,33 +1,49 @@
+"""
+＿人人人人人人人＿
+＞  鳩は唐揚げ  ＜
+￣^Y^Y^Y^Y^Y^Y^Y￣
+を作る
+"""
+
+import unicodedata
 import click
 import pyperclip
-import unicodedata
 
 
-def text_len(text):
+def text_len(text: str) -> int:
+    """
+    一行の長さを出す
+    """
     count = 0
-    for c in text:
-        count += 2 if unicodedata.east_asian_width(c) in 'FWA' else 1
+    for character in text:
+        count += 2 if unicodedata.east_asian_width(character) in 'FWA' else 1
     return count
 
 
 def generator(msg: str) -> str:
+    """
+    ＿人人人人人人人＿
+    ＞  鳩は唐揚げ  ＜
+    ￣^Y^Y^Y^Y^Y^Y^Y￣
+    を作る
+    """
     messages = msg.split('\n')
-    length = list(map(lambda message: text_len(message), messages))
+    length = list(map(text_len, messages))
     max_length = max(length)
 
     generating = '＿人'
-    for i in range(max_length//2):
+    for _ in range(max_length//2):
         generating += '人'
 
     generating += '人＿\n'
 
-    for leng, msg in zip(length, messages):
+    for leng, message in zip(length, messages):
         padding = ' ' * ((max_length - leng) // 2)
-        generating += '＞  ' + padding + msg + padding + '  ＜\n'
+        generating += '＞  ' + padding + message + padding + '  ＜\n'
 
     generating += '￣^Y'
 
-    for i in range(max_length//2):
+    for _ in range(max_length//2):
         generating += '^Y'
     generating += '^Y￣'
     return generating
@@ -35,13 +51,19 @@ def generator(msg: str) -> str:
 
 @click.command()
 @click.argument('msg')
-def cmd(msg):
-    sd = generator(msg)
-    pyperclip.copy(sd)
-    click.echo(sd)
+def cmd(msg: str = ""):
+    """
+    コマンド
+    """
+    result = generator(msg)
+    pyperclip.copy(result)
+    click.echo(result)
 
 
 def main():
+    """
+    メイン関数
+    """
     cmd()
 
 
