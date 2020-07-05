@@ -37,9 +37,9 @@ def generator(msg: str) -> str:
 
     generating += '人＿\n'
 
-    for leng, msg in zip(length, messages):
+    for leng, message in zip(length, messages):
         padding = ' ' * ((max_length - leng) // 2)
-        generating += '＞  ' + padding + msg + padding + '  ＜\n'
+        generating += '＞  ' + padding + message + padding + '  ＜\n'
 
     generating += '￣^Y'
 
