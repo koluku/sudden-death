@@ -28,7 +28,7 @@ def generator(msg: str) -> str:
     を作る
     """
     messages = msg.split('\n')
-    length = list(map(lambda message: text_len(message), messages))
+    length = list(map(text_len, messages))
     max_length = max(length)
 
     generating = '＿人'
