@@ -5,9 +5,9 @@
 を作る
 """
 
+import unicodedata
 import click
 import pyperclip
-import unicodedata
 
 
 def text_len(text: str) -> int:
