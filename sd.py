@@ -11,6 +11,9 @@ import unicodedata
 
 
 def text_len(text: str) -> int:
+    """
+    一行の長さを出す
+    """
     count = 0
     for c in text:
         count += 2 if unicodedata.east_asian_width(c) in 'FWA' else 1
@@ -18,6 +21,12 @@ def text_len(text: str) -> int:
 
 
 def generator(msg: str) -> str:
+    """
+    ＿人人人人人人人＿
+    ＞  鳩は唐揚げ  ＜
+    ￣^Y^Y^Y^Y^Y^Y^Y￣
+    を作る
+    """
     messages = msg.split('\n')
     length = list(map(lambda message: text_len(message), messages))
     max_length = max(length)
@@ -43,12 +52,18 @@ def generator(msg: str) -> str:
 @click.command()
 @click.argument('msg')
 def cmd(msg: str = ""):
+    """
+    コマンド
+    """
     sd = generator(msg)
     pyperclip.copy(sd)
     click.echo(sd)
 
 
 def main():
+    """
+    メイン関数
+    """
     cmd()
 
 
