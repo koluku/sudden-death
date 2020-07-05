@@ -15,8 +15,8 @@ def text_len(text: str) -> int:
     一行の長さを出す
     """
     count = 0
-    for c in text:
-        count += 2 if unicodedata.east_asian_width(c) in 'FWA' else 1
+    for character in text:
+        count += 2 if unicodedata.east_asian_width(character) in 'FWA' else 1
     return count
 
 
@@ -55,9 +55,9 @@ def cmd(msg: str = ""):
     """
     コマンド
     """
-    sd = generator(msg)
-    pyperclip.copy(sd)
-    click.echo(sd)
+    result = generator(msg)
+    pyperclip.copy(result)
+    click.echo(result)
 
 
 def main():
