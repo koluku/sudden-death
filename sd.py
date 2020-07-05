@@ -1,3 +1,10 @@
+"""
+＿人人人人人人人＿
+＞  鳩は唐揚げ  ＜
+￣^Y^Y^Y^Y^Y^Y^Y￣
+を作る
+"""
+
 import click
 import pyperclip
 import unicodedata
