@@ -35,7 +35,7 @@ def generator(msg: str) -> str:
 
 @click.command()
 @click.argument('msg')
-def cmd(msg):
+def cmd(msg=""):
     sd = generator(msg)
     pyperclip.copy(sd)
     click.echo(sd)
