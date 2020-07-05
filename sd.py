@@ -3,7 +3,7 @@ import pyperclip
 import unicodedata
 
 
-def text_len(text):
+def text_len(text: str) -> int:
     count = 0
     for c in text:
         count += 2 if unicodedata.east_asian_width(c) in 'FWA' else 1
@@ -35,7 +35,7 @@ def generator(msg: str) -> str:
 
 @click.command()
 @click.argument('msg')
-def cmd(msg=""):
+def cmd(msg: str = ""):
     sd = generator(msg)
     pyperclip.copy(sd)
     click.echo(sd)
