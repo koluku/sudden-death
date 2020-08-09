@@ -264,3 +264,18 @@ jobs:
       - name: Exit
         if: github.event.pull_request.head.repo.full_name != github.repository && !contains(steps.lint.outputs.result, 'Your code has been rated at 10.00/10')
         run: exit 1
+
+  pr-super-lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: "recursive"
+          fetch-depth: 0
+      - name: Lint files
+        uses: docker://github/super-linter:v2.1.0
+        env:
+          VALIDATE_ALL_CODEBASE: true
+          VALIDATE_PYTHON: false
+          VALIDATE_MD: true
