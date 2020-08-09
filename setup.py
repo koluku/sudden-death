@@ -19,6 +19,6 @@ setup(
     install_requires=_requires_from_file('requirements.txt'),
     packages=['sudden_death'],
     package_data={
-        ".": ["py.typed"],
+        "sudden_death": ["py.typed"],
     }
 )
