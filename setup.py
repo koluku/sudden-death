@@ -18,4 +18,7 @@ setup(
     url="https://github.com/koluku/sudden-death",
     install_requires=_requires_from_file('requirements.txt'),
     packages=['sudden_death'],
+    package_data={
+        "sudden_death": ["py.typed"],
+    }
 )
