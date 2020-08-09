@@ -51,7 +51,7 @@ def generator(msg: str) -> str:
 
 @click.command()
 @click.argument('msg')
-def cmd(msg: str = ""):
+def cmd(msg: str = "") -> None:
     """
     コマンド
     """
