@@ -9,15 +9,17 @@ def _requires_from_file(filename):
     is_in_packages = False
     requires = []
 
-    with open(filename) as f:
-        for r in f:
-            r = r.strip()
-            if r == '[packages]':
+    with open(filename) as _f:
+        for _r in _f:
+            _r = _r.strip()
+            if _r == '[packages]':
                 is_in_packages = True
-            elif r.startswith('['):
+            elif _r.startswith('['):
                 is_in_packages = False
-            elif r and is_in_packages:
-                requires.append(r.replace('"', '').replace(' ', '').replace('=', '', 1))
+            elif _r and is_in_packages:
+                requires.append(_r.replace('"', '')
+                                .replace(' ', '')
+                                .replace('=', '', 1))
 
     return requires
 
