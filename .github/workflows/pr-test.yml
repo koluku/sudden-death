@@ -4,6 +4,9 @@ name: pr-test
 on:
   pull_request:
 
+env:
+  WORKON_HOME: /tmp/.venv
+
 jobs:
   # PRが来たらformatをかけてみて、差分があればPRを作って、エラーで落ちるjob
   pr-format:
@@ -19,16 +22,16 @@ jobs:
           # submodule: 'recursive'
           fetch-depth: 0
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2.1.2
         with:
           python-version: ${{ matrix.python-version }}
       - name: pip cache
         uses: actions/cache@v2
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-${{ matrix.python-version }}-pip
+          key: ${{ hashFiles('./.github/workflows/pr-test.yml') }}-${{ runner.os }}-${{ matrix.python-version }}-pip
           restore-keys: |
-            ${{ runner.os }}-${{ matrix.python-version }}-pip
+            ${{ hashFiles('./.github/workflows/pr-test.yml') }}-${{ runner.os }}-${{ matrix.python-version }}-pip
       - name: Install pip
         run: |
           python -m pip install --upgrade pip
@@ -37,11 +40,11 @@ jobs:
       - name: pipenv cache
         uses: actions/cache@v2
         with:
-          key: ${{ runner.os }}-${{ matrix.python-version }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
-          path: ~/.cache/pipenv
+          key: ${{ hashFiles('./.github/workflows/pr-test.yml') }}-${{ runner.os }}-${{ matrix.python-version }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
+          path: ${{ env.WORKON_HOME }}
           restore-keys: |
-            ${{ runner.os }}-${{ matrix.python-version }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
-            ${{ runner.os }}-${{ matrix.python-version }}-pipenv-
+            ${{ hashFiles('./.github/workflows/pr-test.yml') }}-${{ runner.os }}-${{ matrix.python-version }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
+            ${{ hashFiles('./.github/workflows/pr-test.yml') }}-${{ runner.os }}-${{ matrix.python-version }}-pipenv-
       - name: Install dependencies
         run: |
           pipenv install --dev
@@ -68,38 +71,50 @@ jobs:
           git push -f https://${{github.actor}}:${{secrets.GITHUB_TOKEN}}@github.com/${{github.repository}}.git HEAD:refs/heads/fix-format-${{github.event.pull_request.head.ref}}
       # pushしたブランチでPRを作る
       - name: Create PullRequest
-        uses: actions/github-script@0.9.0
+        uses: actions/github-script@v3
         if: github.event.pull_request.head.repo.full_name == github.repository && steps.format.outcome == 'failure'
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
             const common_params = {
               owner: context.repo.owner,
-              repo: context.repo.repo,
+              repo: context.repo.repo
+            }
+            const pull_params = {
               head: "refs/heads/fix-format-${{github.event.pull_request.head.ref}}",
-              base: "${{github.event.pull_request.head.ref}}"
+              base: "${{github.event.pull_request.head.ref}}",
+              ...common_params
             }
             const pulls_list_params = {
               state: "open",
-              ...common_params
+              ...pull_params
             }
             console.log("call pulls.list:")
             console.log(pulls_list_params)
-            github.pulls.list(pulls_list_params).then(res => {
-              if (res.data.filter(data => data.user.id === 41898282).length === 0) {
+            github.pulls.list(pulls_list_params).then(list_res => {
+              if (list_res.data.filter(data => data.user.id === 41898282).length === 0) {
                 const pulls_create_params = {
                   title: "formatが間違ってたので直してあげたよ！PRをマージしてね！ #${{github.event.pull_request.number}}",
                   body: "鳩の唐揚げおいしい！😋😋😋 #${{github.event.pull_request.number}}",
-                  ...common_params
+                  ...pull_params
                 }
                 console.log("call pulls.create:")
                 console.log(pulls_create_params)
-                github.pulls.create(pulls_create_params)
+                github.pulls.create(pulls_create_params).then(create_res => {
+                  const issues_add_assignees_params = {
+                    issue_number: create_res.data.number,
+                    assignees: ["${{github.event.pull_request.user.login}}"],
+                    ...common_params
+                  }
+                  console.log("call issues.addAssignees:")
+                  console.log(issues_add_assignees_params)
+                  github.issues.addAssignees(issues_add_assignees_params)
+                })
               }
             })
       # 既にformat修正のPRがある状態で、手動でformatを修正した場合、format修正のPRを閉じる
       - name: Close PullRequest
-        uses: actions/github-script@0.9.0
+        uses: actions/github-script@v3
         if: github.event.pull_request.head.repo.full_name == github.repository && steps.format.outcome != 'failure'
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
@@ -154,18 +169,18 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          submodules: 'recursive'
+          submodules: "recursive"
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2.1.2
         with:
           python-version: ${{ matrix.python-version }}
       - name: pip cache
         uses: actions/cache@v2
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-${{ matrix.python-version }}-pip
+          key: ${{ hashFiles('./.github/workflows/pr-test.yml') }}-${{ runner.os }}-${{ matrix.python-version }}-pip
           restore-keys: |
-            ${{ runner.os }}-${{ matrix.python-version }}-pip
+            ${{ hashFiles('./.github/workflows/pr-test.yml') }}-${{ runner.os }}-${{ matrix.python-version }}-pip
       - name: Install pip
         run: |
           python -m pip install --upgrade pip
@@ -174,14 +189,17 @@ jobs:
       - name: pipenv cache
         uses: actions/cache@v2
         with:
-          key: ${{ runner.os }}-${{ matrix.python-version }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
-          path: ~/.cache/pipenv
+          key: ${{ hashFiles('./.github/workflows/pr-test.yml') }}-${{ runner.os }}-${{ matrix.python-version }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
+          path: ${{ env.WORKON_HOME }}
           restore-keys: |
-            ${{ runner.os }}-${{ matrix.python-version }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
-            ${{ runner.os }}-${{ matrix.python-version }}-pipenv-
+            ${{ hashFiles('./.github/workflows/pr-test.yml') }}-${{ runner.os }}-${{ matrix.python-version }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
+            ${{ hashFiles('./.github/workflows/pr-test.yml') }}-${{ runner.os }}-${{ matrix.python-version }}-pipenv-
       - name: Install dependencies
         run: |
           pipenv install --dev
+      - name: Set .env
+        run: |
+          cp .env.example .env
       - name: Test
         run: |
           pipenv run python -m unittest
@@ -196,18 +214,18 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          submodules: 'recursive'
+          submodules: "recursive"
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2.1.2
         with:
           python-version: ${{ matrix.python-version }}
       - name: pip cache
         uses: actions/cache@v2
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-${{ matrix.python-version }}-pip
+          key: ${{ hashFiles('./.github/workflows/pr-test.yml') }}-${{ runner.os }}-${{ matrix.python-version }}-pip
           restore-keys: |
-            ${{ runner.os }}-${{ matrix.python-version }}-pip
+            ${{ hashFiles('./.github/workflows/pr-test.yml') }}-${{ runner.os }}-${{ matrix.python-version }}-pip
       - name: Install pip
         run: |
           python -m pip install --upgrade pip
@@ -216,11 +234,11 @@ jobs:
       - name: pipenv cache
         uses: actions/cache@v2
         with:
-          key: ${{ runner.os }}-${{ matrix.python-version }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
-          path: ~/.cache/pipenv
+          key: ${{ hashFiles('./.github/workflows/pr-test.yml') }}-${{ runner.os }}-${{ matrix.python-version }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
+          path: ${{ env.WORKON_HOME }}
           restore-keys: |
-            ${{ runner.os }}-${{ matrix.python-version }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
-            ${{ runner.os }}-${{ matrix.python-version }}-pipenv-
+            ${{ hashFiles('./.github/workflows/pr-test.yml') }}-${{ runner.os }}-${{ matrix.python-version }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
+            ${{ hashFiles('./.github/workflows/pr-test.yml') }}-${{ runner.os }}-${{ matrix.python-version }}-pipenv-
       - name: Install dependencies
         run: |
           pipenv install --dev
@@ -239,19 +257,19 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          submodules: 'recursive'
+          submodules: "recursive"
           fetch-depth: 0
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2.1.2
         with:
           python-version: ${{ matrix.python-version }}
       - name: pip cache
         uses: actions/cache@v2
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-${{ matrix.python-version }}-pip
+          key: ${{ hashFiles('./.github/workflows/pr-test.yml') }}-${{ runner.os }}-${{ matrix.python-version }}-pip
           restore-keys: |
-            ${{ runner.os }}-${{ matrix.python-version }}-pip
+            ${{ hashFiles('./.github/workflows/pr-test.yml') }}-${{ runner.os }}-${{ matrix.python-version }}-pip
       - name: Install pip
         run: |
           python -m pip install --upgrade pip
@@ -260,11 +278,11 @@ jobs:
       - name: pipenv cache
         uses: actions/cache@v2
         with:
-          key: ${{ runner.os }}-${{ matrix.python-version }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
-          path: ~/.cache/pipenv
+          key: ${{ hashFiles('./.github/workflows/pr-test.yml') }}-${{ runner.os }}-${{ matrix.python-version }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
+          path: ${{ env.WORKON_HOME }}
           restore-keys: |
-            ${{ runner.os }}-${{ matrix.python-version }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
-            ${{ runner.os }}-${{ matrix.python-version }}-pipenv-
+            ${{ hashFiles('./.github/workflows/pr-test.yml') }}-${{ runner.os }}-${{ matrix.python-version }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
+            ${{ hashFiles('./.github/workflows/pr-test.yml') }}-${{ runner.os }}-${{ matrix.python-version }}-pipenv-
       - name: Install dependencies
         run: |
           pipenv install --dev
@@ -283,7 +301,7 @@ jobs:
       # lint結果をコメントに残す
       - name: Lint Comment
         if: github.event.pull_request.head.repo.full_name == github.repository && steps.lint.outputs.result != ''
-        uses: actions/github-script@0.9.0
+        uses: actions/github-script@v3
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
@@ -327,17 +345,103 @@ jobs:
         if: github.event.pull_request.head.repo.full_name != github.repository && !contains(steps.lint.outputs.result, 'Your code has been rated at 10.00/10')
         run: exit 1
 
+  hadolint:
+    name: runner / hadolint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v1
+      - name: hadolint
+        uses: reviewdog/action-hadolint@v1
+        with:
+          level: warning
+          filter_mode: nofilter
+
   pr-super-lint:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.8]
 
     steps:
       - uses: actions/checkout@v2
         with:
           submodules: "recursive"
           fetch-depth: 0
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2.1.2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: pip cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ hashFiles('./.github/workflows/pr-test.yml') }}-${{ runner.os }}-${{ matrix.python-version }}-pip
+          restore-keys: |
+            ${{ hashFiles('./.github/workflows/pr-test.yml') }}-${{ runner.os }}-${{ matrix.python-version }}-pip
+      - name: Install pip
+        run: |
+          python -m pip install --upgrade pip
+          pip install pipenv
+          pipenv lock
+      - name: pipenv cache
+        uses: actions/cache@v2
+        with:
+          key: ${{ hashFiles('./.github/workflows/pr-test.yml') }}-${{ runner.os }}-${{ matrix.python-version }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
+          path: ${{ env.WORKON_HOME }}
+          restore-keys: |
+            ${{ hashFiles('./.github/workflows/pr-test.yml') }}-${{ runner.os }}-${{ matrix.python-version }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
+            ${{ hashFiles('./.github/workflows/pr-test.yml') }}-${{ runner.os }}-${{ matrix.python-version }}-pipenv-
+      - name: Install dependencies
+        run: |
+          pipenv install --dev
+
+        # pipenvの仕様で、project直下の.venvの場合は .venv/lib/... にインストールされるが、
+        # WORKON_HOMEを設定してインストール先をずらした場合は .venv/hato-bot-(hash)/lib/... にインストールされる。
+        # 参考URL: https://bit.ly/2CnKOtJ
+        #
+        # ${GITHUB_REPOSITORY##*/}
+        # GITHUB_REPOSITORYは dev-hato/hato-bot のように入るので、シェル芸で hato-bot のみ取り出している。
+        # 他に持っていっても使えるようにした。
+        # 参考URL: https://bit.ly/2PP4IRt
+        #
+        # log出力のためにfindコマンド単体も置いている
+        #
+        # set-envコマンドを使ってenvにsetしている
+        # 参考URL: https://bit.ly/2Y1oQEG
+      - name: Set venv_path
+        run: |
+          venv_path=$(find ${{ env.WORKON_HOME }} -name "${GITHUB_REPOSITORY##*/}-*")
+          echo "${venv_path}"
+          echo "::set-env name=venv_path::${venv_path}"
+
+        # https://github.com/github/super-linter/issues/157#issuecomment-648850330
+        # -v "/home/runner/work/_temp/_github_workflow":"/github/workflow"
+        # ここに cp -r することで、super-linterのなかに.venvを配置できる
+        # また、元ディレクトリにも残っているので、キャッシュが作られる
+      - name: Move the dependencies
+        run: cp -r ${{ env.venv_path }} /home/runner/work/_temp/_github_workflow/.venv
+
       - name: Lint files
-        uses: docker://github/super-linter:v2.1.0
+        uses: docker://github/super-linter:v3.6.0
         env:
           VALIDATE_ALL_CODEBASE: true
-          VALIDATE_PYTHON: false
-          VALIDATE_MD: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WORKON_HOME: ""
+          PYTHONPATH: "/github/workspace/:\
+            /github/workflow/.venv/lib/python${{ matrix.python-version }}/site-packages"
+  
+  pr-docker:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Set .env	
+        run: |	
+          cp .env.example .env
+      - name: Build docker image
+        run: |
+          cd setup
+          docker-compose build --no-cache
