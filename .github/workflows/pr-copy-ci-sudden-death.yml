@@ -40,14 +40,6 @@ jobs:
                 }
                 console.log("call pulls.create:")
                 console.log(pulls_create_params)
-                github.pulls.create(pulls_create_params).then(create_res => {
-                  const issues_add_assignees_params = {
-                    issue_number: create_res.data.number,
-                    ...common_params
-                  }
-                  console.log("call issues.addAssignees:")
-                  console.log(issues_add_assignees_params)
-                  github.issues.addAssignees(issues_add_assignees_params)
-                })
+                github.pulls.create(pulls_create_params)
               }
             })
