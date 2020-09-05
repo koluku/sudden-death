@@ -5,7 +5,7 @@ verify_ssl = true
 
 [dev-packages]
 pylint = "==2.5.3"
-autopep8 = "==1.5.3"
+autopep8 = "==1.5.4"
 mypy = "==0.782"
 
 [packages]
