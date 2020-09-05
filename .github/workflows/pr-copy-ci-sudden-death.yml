@@ -21,8 +21,8 @@ jobs:
               repo: context.repo.repo
             }
             const pull_params = {
-              head: "ref/heads/pr-copy-ci",
-              base: "master",
+              head: "dev-hato:pr-copy-ci",
+              base: "dev-hato:master",
               ...common_params
             }
             const pulls_list_params = {
