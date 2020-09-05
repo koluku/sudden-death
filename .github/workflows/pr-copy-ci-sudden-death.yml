@@ -1,0 +1,53 @@
+name: pr-copy-ci-sudden-death
+
+on:
+  push:
+    branches:
+      - pr-copy-ci
+
+jobs:
+  # hato-botのCIの差分がpushされたらPRを作成する
+  pr-copy-ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create PullRequest
+        uses: actions/github-script@v3
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const common_params = {
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            }
+            const pull_params = {
+              head: "ref/head/pr-copy-ci",
+              base: "master",
+              ...common_params
+            }
+            const pulls_list_params = {
+              state: "open",
+              ...pull_params
+            }
+            console.log("call pulls.list:")
+            console.log(pulls_list_params)
+            github.pulls.list(pulls_list_params).then(list_res => {
+              if (list_res.data.filter(data => data.user.id === 41898282).length === 0) {
+                const pulls_create_params = {
+                  title: "hato-botのCIを反映するよ！",
+                  body: "鳩の唐揚げおいしい！😋😋😋",
+                  ...pull_params
+                }
+                console.log("call pulls.create:")
+                console.log(pulls_create_params)
+                github.pulls.create(pulls_create_params).then(create_res => {
+                  const issues_add_assignees_params = {
+                    issue_number: create_res.data.number,
+                    ...common_params
+                  }
+                  console.log("call issues.addAssignees:")
+                  console.log(issues_add_assignees_params)
+                  github.issues.addAssignees(issues_add_assignees_params)
+                })
+              }
+            })
