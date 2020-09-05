@@ -1,9 +1,7 @@
 name: pr-copy-ci-sudden-death
 
 on:
-  push:
-    branches:
-      - pr-copy-ci
+  pull_request:
 
 jobs:
   # hato-botのCIの差分がpushされたらPRを作成する
