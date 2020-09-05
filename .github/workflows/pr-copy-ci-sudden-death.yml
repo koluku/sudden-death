@@ -21,7 +21,7 @@ jobs:
               repo: context.repo.repo
             }
             const pull_params = {
-              head: "ref/head/pr-copy-ci",
+              head: "ref/heads/pr-copy-ci",
               base: "master",
               ...common_params
             }
